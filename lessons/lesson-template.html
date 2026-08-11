@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 000X: Title</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 000X: Title</h1>
+      <p><em>Short description of the lesson.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        What the learner will be able to do after this lesson.
+      </div>
+
+      <!-- ======== Section 1 ======== -->
+      <h2>Heading</h2>
+      <p>Content goes here.</p>
+
+      <!-- ======== Section 2 ======== -->
+      <h2>Heading</h2>
+      <p>Content goes here.</p>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Question text?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Option A</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Option B</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Option C</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Title</h3>
+        <p>Instructions for a small hands-on task.</p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Key takeaway 1</li>
+        <li>Key takeaway 2</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Resource Name</strong> — Brief description kung bakit ito kapaki-pakinabang. <a href="https://example.com" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'a' /* update with correct answers */ };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

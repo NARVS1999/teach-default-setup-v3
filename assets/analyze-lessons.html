@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson Analyzer</title>
+  <link rel="stylesheet" href="style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+  <style>
+    body { font-family: var(--font-sans); padding: 2rem; }
+    .analyzer-wrap { max-width: 960px; margin: 0 auto; }
+    h1 { margin-top: 0; }
+    .summary { display: flex; gap: 1rem; margin: 1.5rem 0; flex-wrap: wrap; }
+    .stat { flex: 1; min-width: 120px; padding: 1rem; border-radius: var(--radius); text-align: center; font-weight: 600; border: 1px solid var(--border); }
+    .stat.pass { background: #f0fdf4; color: #166534; }
+    .stat.fail { background: #fef2f2; color: #991b1b; }
+    .stat.total { background: var(--code-bg); }
+    [data-theme="dark"] .stat.pass { background: #064e3b; color: #6ee7b7; }
+    [data-theme="dark"] .stat.fail { background: #7f1d1d; color: #fca5a5; }
+    .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .stat-value { font-size: 1.75rem; }
+    .checks { display: flex; flex-wrap: wrap; gap: 0.25rem; margin: 0.5rem 0; }
+    .check { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 500; }
+    .check.ok { background: #f0fdf4; color: #166534; }
+    .check.missing { background: #fef2f2; color: #991b1b; }
+    [data-theme="dark"] .check.ok { background: #064e3b; color: #6ee7b7; }
+    [data-theme="dark"] .check.missing { background: #7f1d1d; color: #fca5a5; }
+    table { font-size: 0.85rem; }
+    td { vertical-align: top; }
+    .error-msg { color: var(--warning); font-family: var(--font-mono); font-size: 0.8rem; }
+    .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .filter-bar button { padding: 0.4rem 1rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); cursor: pointer; font-family: var(--font-sans); font-size: 0.85rem; }
+    .filter-bar button:hover { background: var(--accent-light); }
+    .filter-bar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .loader { text-align: center; padding: 3rem; color: var(--muted); }
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge.completed { background: #f0fdf4; color: #166534; }
+    .badge.in-progress { background: #fffbeb; color: #92400e; }
+    .badge.pending { background: #f3f4f6; color: #6b7280; }
+    [data-theme="dark"] .badge.completed { background: #064e3b; color: #6ee7b7; }
+    [data-theme="dark"] .badge.in-progress { background: #78350f; color: #fbbf24; }
+    [data-theme="dark"] .badge.pending { background: #1e293b; color: #94a3b8; }
+  </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="analyzer-wrap">
+
+  <h1>Lesson Analyzer</h1>
+  <p>Checks every lesson for required structural elements. <em>Opened via <code>file://</code>? Switch to Firefox or run a local server (<code>python -m http.server</code>) if fetches fail.</em></p>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="active" data-filter="all">All</button>
+    <button data-filter="completed">Completed</button>
+    <button data-filter="in-progress">In Progress</button>
+    <button data-filter="pending">Pending</button>
+    <button data-filter="issues">Has Issues</button>
+  </div>
+
+  <div class="summary" id="summaryArea">
+    <div class="stat total"><div class="stat-label">Total</div><div class="stat-value" id="statTotal">0</div></div>
+    <div class="stat pass"><div class="stat-label">Pass</div><div class="stat-value" id="statPass">0</div></div>
+    <div class="stat fail"><div class="stat-label">Issues</div><div class="stat-value" id="statIssues">0</div></div>
+  </div>
+
+  <div id="resultArea">
+    <div class="loader">Loading lessons-data.js…</div>
+  </div>
+
+</div>
+
+<script src="lessons-data.js"></script>
+<script>
+(function() {
+  var checks = [
+    { key: 'resource', label: 'Recommended Resource', pattern: 'Recommended Resource</h2>' },
+    { key: 'quiz', label: 'Quiz', pattern: 'quiz-item' },
+    { key: 'project', label: 'Project', pattern: 'class="project"' },
+    { key: 'checkQuiz', label: 'checkQuiz()', pattern: 'function checkQuiz' },
+    { key: 'sidebar', label: 'sidebar.js', pattern: 'sidebar.js' },
+    { key: 'lessonNav', label: 'lesson-nav.js', pattern: 'lesson-nav.js' },
+    { key: 'themeToggle', label: 'Theme Toggle', pattern: 'theme-toggle' },
+    { key: 'summary', label: 'Summary', pattern: '>Summary<' },
+  ];
+
+  var resultArea = document.getElementById('resultArea');
+  var statTotal = document.getElementById('statTotal');
+  var statPass = document.getElementById('statPass');
+  var statIssues = document.getElementById('statIssues');
+  var filterBar = document.getElementById('filterBar');
+  var currentFilter = 'all';
+
+  function analyzeAll() {
+    if (!window.LESSONS || !LESSONS.length) {
+      resultArea.innerHTML = '<div class="loader">No lessons found in LESSONS array. Populate <code>assets/lessons-data.js</code> first.</div>';
+      return;
+    }
+
+    resultArea.innerHTML = '<div class="loader">Analyzing ' + LESSONS.length + ' lessons…</div>';
+    var results = [];
+    var loaded = 0;
+
+    LESSONS.forEach(function(l, idx) {
+      fetchLesson(l.file, function(html, err) {
+        results[idx] = { lesson: l, html: html, error: err, details: null };
+        loaded++;
+        if (loaded === LESSONS.length) {
+          renderResults(results);
+        }
+      });
+    });
+  }
+
+  function fetchLesson(filename, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', filename, true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200 || xhr.status === 0) {
+          callback(xhr.responseText, null);
+        } else {
+          callback(null, 'HTTP ' + xhr.status);
+        }
+      }
+    };
+    xhr.onerror = function() {
+      callback(null, 'Network error (file:// fetch blocked?)');
+    };
+    xhr.send();
+  }
+
+  function runChecks(html) {
+    var result = {};
+    checks.forEach(function(c) {
+      result[c.key] = html.indexOf(c.pattern) !== -1;
+    });
+    return result;
+  }
+
+  function renderResults(results) {
+    var total = results.length;
+    var pass = 0;
+    var issues = 0;
+    var html = '<table><thead><tr><th>#</th><th>Lesson</th><th>Status</th><th>Checks</th></tr></thead><tbody>';
+
+    results.forEach(function(r) {
+      var detail = null;
+      if (r.html && !r.error) {
+        detail = runChecks(r.html);
+      }
+      r.details = detail;
+
+      var hasIssues = detail ? checks.some(function(c) { return !detail[c.key]; }) : true;
+      if (hasIssues) issues++; else pass++;
+
+      var rowClass = (r.error || hasIssues) ? ' style="background:rgba(153,27,27,0.05);"' : '';
+
+      html += '<tr' + rowClass + ' class="lesson-row" data-status="' + r.lesson.status + '" data-issues="' + (hasIssues ? '1' : '0') + '">';
+      html += '<td><code>' + r.lesson.id + '</code></td>';
+      html += '<td><strong>' + r.lesson.title + '</strong><br><code style="font-size:0.75rem;">' + r.lesson.file + '</code></td>';
+
+      html += '<td><span class="badge ' + (r.lesson.status || 'pending') + '">' + (r.lesson.status || 'pending') + '</span></td>';
+
+      html += '<td>';
+      if (r.error) {
+        html += '<span class="error-msg">' + r.error + '</span>';
+      } else {
+        html += '<div class="checks">';
+        checks.forEach(function(c) {
+          html += '<span class="check ' + (detail[c.key] ? 'ok' : 'missing') + '">' + (detail[c.key] ? '\u2713' : '\u2717') + ' ' + c.label + '</span>';
+        });
+        html += '</div>';
+      }
+      html += '</td></tr>';
+    });
+
+    html += '</tbody></table>';
+    resultArea.innerHTML = html;
+
+    statTotal.textContent = total;
+    statPass.textContent = pass;
+    statIssues.textContent = issues;
+
+    applyFilter(currentFilter);
+  }
+
+  function applyFilter(filter) {
+    currentFilter = filter;
+    var rows = document.querySelectorAll('.lesson-row');
+    rows.forEach(function(row) {
+      var status = row.getAttribute('data-status');
+      var hasIssues = row.getAttribute('data-issues') === '1';
+      var show = true;
+      if (filter === 'completed' && status !== 'completed') show = false;
+      if (filter === 'in-progress' && status !== 'in-progress') show = false;
+      if (filter === 'pending' && status !== 'pending') show = false;
+      if (filter === 'issues' && !hasIssues) show = false;
+      row.style.display = show ? '' : 'none';
+    });
+
+    filterBar.querySelectorAll('button').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-filter') === filter);
+    });
+  }
+
+  filterBar.addEventListener('click', function(e) {
+    if (e.target.tagName === 'BUTTON') {
+      applyFilter(e.target.getAttribute('data-filter'));
+    }
+  });
+
+  // Wait for LESSONS to be available (script loads synchronously, but just in case)
+  if (window.LESSONS && LESSONS.length) {
+    analyzeAll();
+  } else {
+    // Poll for LESSONS
+    var poll = setInterval(function() {
+      if (window.LESSONS && LESSONS.length) {
+        clearInterval(poll);
+        analyzeAll();
+      }
+    }, 100);
+    setTimeout(function() {
+      clearInterval(poll);
+      if (!window.LESSONS || !LESSONS.length) {
+        resultArea.innerHTML = '<div class="loader"><code>window.LESSONS</code> not found. Make sure <code>lessons-data.js</code> is populated.</div>';
+      }
+    }, 5000);
+  }
+})();
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

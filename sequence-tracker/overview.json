@@ -1,0 +1,19 @@
+{
+  "title": "Course Title",
+  "description": "Brief description of the course",
+  "totalLessons": 0,
+  "completed": 0,
+  "inProgress": 0,
+  "pending": 0,
+  "lastUpdated": "",
+  "lessons": [
+    {
+      "id": "0001",
+      "title": "Lesson Title",
+      "file": "0001-lesson-title.html",
+      "status": "pending",
+      "topics": [],
+      "prerequisites": []
+    }
+  ]
+}
