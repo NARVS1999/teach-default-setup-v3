@@ -9,7 +9,7 @@
 //   id     — unique prefix (used as the filename prefix and ID)
 //   title  — display name in sidebar / nav
 //   file   — filename of the lesson HTML (no directory prefix)
-//   status — "completed" | "in-progress" | "pending"
+//   phase  — grouping category for collapsible sidebar sections
 //
 // IMPORTANT: Do NOT include a "lessons/" directory prefix in `file`.
 // The sidebar.js and lesson-nav.js scripts derive the correct path
@@ -17,7 +17,7 @@
 // ============================================================
 window.LESSONS = [
   // Example entries — replace with your own lessons:
-  // { id: '0001', title: 'Lesson One',   file: '0001-lesson-one.html',   status: 'completed' },
-  // { id: '0002', title: 'Lesson Two',   file: '0002-lesson-two.html',   status: 'in-progress' },
-  // { id: '0003', title: 'Lesson Three', file: '0003-lesson-three.html', status: 'pending' },
+  // { id: '0001', title: 'Lesson One',   file: '0001-lesson-one.html',   phase: 'Getting Started' },
+  // { id: '0002', title: 'Lesson Two',   file: '0002-lesson-two.html',   phase: 'Getting Started' },
+  // { id: '0003', title: 'Lesson Three', file: '0003-lesson-three.html', phase: 'Advanced Topics' },
 ];

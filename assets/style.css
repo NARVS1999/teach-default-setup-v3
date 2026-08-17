@@ -68,6 +68,12 @@ body {
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.lesson-sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .lesson-main {
@@ -84,6 +90,31 @@ body {
 
 .sidebar-section {
   padding: 0 1rem;
+}
+
+.sidebar-home {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem 0;
+  border-radius: 6px;
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--code-bg);
+  transition: all 0.15s;
+}
+
+.sidebar-home:hover {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+}
+
+.sidebar-home svg {
+  flex-shrink: 0;
 }
 
 .sidebar-header {
@@ -105,6 +136,67 @@ body {
 
 .sidebar-nav li {
   margin: 0;
+}
+
+/* Sidebar Group (Collapsible Section) */
+
+.sidebar-group {
+  margin-bottom: 0.25rem;
+}
+
+.sidebar-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.sidebar-group-header:hover {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+}
+
+.sidebar-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-group.expanded .sidebar-chevron {
+  transform: rotate(90deg);
+}
+
+.sidebar-count {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--code-bg);
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+}
+
+.sidebar-group-list {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sidebar-group.expanded .sidebar-group-list {
+  max-height: 500px;
 }
 
 .sidebar-link {
@@ -568,6 +660,7 @@ tr:last-child td {
 
 .btn-start:hover {
   background: var(--accent-dark);
+  color: var(--text);
 }
 
 .landing .phases {
