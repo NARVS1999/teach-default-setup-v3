@@ -107,11 +107,11 @@ body {
 .lesson-sidebar {
   background: var(--bg-editor);
   border-right: 1px solid var(--border);
-  padding: 1rem 0 2rem 0;
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -133,7 +133,15 @@ body {
 /* ========== Sidebar Nav ========== */
 
 .sidebar-section {
-  padding: 0 0.75rem;
+  padding: 1rem 0.75rem;
+  flex: 1;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sidebar-section::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebar-home {
@@ -285,11 +293,12 @@ body {
 /* ========== Featured / Next Up ========== */
 
 .sidebar-featured {
-  margin: 1rem 0.75rem 0;
+  margin: 0 0.75rem 1rem 0.75rem;
   padding: 0.75rem;
   background: var(--code-bg);
   border-radius: var(--radius);
   border: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .featured-label {
@@ -386,6 +395,8 @@ pre {
 }
 
 pre code {
+  display: block;
+  white-space: pre;
   background: none;
   padding: 0;
   border-radius: 0;
