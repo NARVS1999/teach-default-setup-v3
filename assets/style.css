@@ -107,7 +107,7 @@ body {
 .lesson-sidebar {
   background: var(--bg-editor);
   border-right: 1px solid var(--border);
-  padding: 1rem 0;
+  padding: 1rem 0 2rem 0;
   position: sticky;
   top: 0;
   height: 100vh;
